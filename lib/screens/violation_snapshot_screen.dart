@@ -1,5 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:viowatch/violations.dart';
+import 'package:viowatch/model/violation.dart';
 
 class ViolationSnapshotScreen extends StatelessWidget {
   final Violation violation;
@@ -10,12 +11,10 @@ class ViolationSnapshotScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final Color primaryColor = const Color.fromARGB(255, 17, 55, 101);
 
+    // Decode base64 image
+    final imageBytes = base64Decode(violation.imageBase64);
+
     return Scaffold(
-      appBar: AppBar(
-        // title: const Text('Violation Snapshot'),
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
-      ),
       backgroundColor: Colors.grey[100],
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -36,7 +35,6 @@ class ViolationSnapshotScreen extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // Header
                           Text(
                             'Violation Snapshot',
                             style: TextStyle(
@@ -47,37 +45,23 @@ class ViolationSnapshotScreen extends StatelessWidget {
                             ),
                             textAlign: TextAlign.center,
                           ),
-
                           const SizedBox(height: 16),
 
-                          // Image card
                           Card(
                             elevation: 6,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
                             clipBehavior: Clip.antiAlias,
-                            child: AspectRatio(
-                              aspectRatio: 16 / 9,
-                              child: Container(
-                                color: Colors.grey[300],
-                                child: const Center(
-                                  child: Icon(
-                                    Icons.image,
-                                    size: 90,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                                // Replace this Container with your actual Image widget.
-                                // Example:
-                                // child: Image.asset('assets/images/violation_photo.jpg', fit: BoxFit.cover),
-                              ),
+                            child: Image.memory(
+                              imageBytes,
+                              fit: BoxFit.contain,
+                              width: double.infinity,
                             ),
                           ),
 
                           const SizedBox(height: 32),
 
-                          // Details card (bigger)
                           Card(
                             elevation: 4,
                             shape: RoundedRectangleBorder(
@@ -98,26 +82,79 @@ class ViolationSnapshotScreen extends StatelessWidget {
                                   InfoRow(
                                     title: 'Number Plate',
                                     value: violation.numberPlate,
-                                    titleFontSize: 20,
-                                    valueFontSize: 18,
                                   ),
-                                  InfoRow(
-                                    title: 'Time of Occurrence',
-                                    value: violation.time,
-                                    titleFontSize: 20,
-                                    valueFontSize: 18,
+                                  InfoRow(title: 'Date', value: violation.date),
+                                  InfoRow(title: 'Time', value: violation.time),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Card(
+                            elevation: 4,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            color: Colors.white,
+                            child: Padding(
+                              padding: const EdgeInsets.all(28.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Fine Details',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: primaryColor,
+                                    ),
                                   ),
-                                  InfoRow(
-                                    title: 'Location',
-                                    value: violation.location,
-                                    titleFontSize: 20,
-                                    valueFontSize: 18,
-                                  ),
-                                  InfoRow(
-                                    title: 'Fine Amount',
-                                    value: violation.fine,
-                                    titleFontSize: 20,
-                                    valueFontSize: 18,
+                                  const SizedBox(height: 16),
+
+                                  ...violation.violationTypes.map((type) {
+                                    final fine = fineRates[type] ?? 0;
+                                    return Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 8.0,
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            type,
+                                            style: TextStyle(fontSize: 16),
+                                          ),
+                                          Text(
+                                            '₹$fine',
+                                            style: TextStyle(fontSize: 16),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
+
+                                  const Divider(thickness: 1.2, height: 30),
+
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Total Fine',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18,
+                                        ),
+                                      ),
+                                      Text(
+                                        '₹${violation.totalFine}',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18,
+                                          color: Colors.redAccent,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),

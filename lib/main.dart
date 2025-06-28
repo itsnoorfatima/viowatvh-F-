@@ -14,7 +14,8 @@ class VioWatchApp extends StatelessWidget {
       title: 'Viowatch',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.indigo, fontFamily: 'Roboto'),
-      home: const HomeScreen(), // Sets the home screen
+      home: const HomeScreen(), 
+
     );
   }
 }
